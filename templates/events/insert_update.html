@@ -1,0 +1,12 @@
+{% extends "mysite/base.html" %}
+
+{% block content %}
+    <h1>New, or amended, event</h1>
+    {% if error_message %}
+      <h2 class="error">{{error_message}}</h2>
+    {% endif %}
+    <form method="POST" class="post-form">{% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="save btn btn-default">Put this event on the website</button>
+    </form>
+{% endblock %}

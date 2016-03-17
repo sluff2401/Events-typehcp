@@ -1,0 +1,75 @@
+{% extends "mysite/base.html" %}
+
+{% block content %}
+  {% if activeperson_status >= 30 %}
+    {% if periodsought = 'current' %}
+      <a class="btn btn-default" href="{% url 'eventinsert' function='insert' %}" >Add a new event</span></a>
+      <a class="btn btn-default" href="{% url 'eventlist' 'notcurrent' %}" >View past events and deleted events</span></a>
+    {% else %}
+      <h1> Events that have either been deleted or have become outdated</h1>
+      <a class="btn btn-default" href="{% url 'eventlist' 'current'  %}" >View current events</span></a>
+    {% endif %}
+  {% endif %}
+  {% if activeperson_status >= 20 %}
+    <a class="btn btn-default" href="{% url 'userlist' %}">
+    <span>View members</span></a>
+  {% endif %}
+    <p>_________________________________________________________</p>
+  {% for x in events %}
+    <h2>
+    {{ x.event.e_date|date:"l jS F Y" }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</a>
+
+    {% if x.user_can_edit_this_event = True %}
+      {% if periodsought = 'current' %}
+        <a class="btn btn-default" href="{% url 'eventupdate' pk=x.event.pk function='bookinto' %}">
+        <span>Book into this event</span></a>
+        <a class="btn btn-default" href="{% url 'eventupdate' pk=x.event.pk function='leave' %}">
+        <span>Leave this event</span></a>
+        <a class="btn btn-default" href="{% url 'eventupdate' pk=x.event.pk function='eventupdate' %} ">
+        <span>Change this event</span></a>
+        <a class="btn btn-default" href="{% url 'eventupdate' pk=x.event.pk function='repeat' %} ">
+        <span>Repeat this event</span></a>
+        <a class="btn btn-default" href="{% url 'eventupdate' pk=x.event.pk function='delete' %}">
+        <span>Delete this event</span></a>
+      {% else %}
+        {% if x.event_status_now = 'past'%}
+          <a class="btn btn-default" href="{% url 'eventupdate' pk=x.event.pk function='repeat' %} ">
+          <span>Publish this event with a current date</span></a>
+        {% else %}                                                                   {# i.e. event_status_now is 'live' or 'deletednonpast' #}
+          <a class="btn btn-default" href="{% url 'eventupdate' pk=x.event.pk function='restore' %} ">
+          <span>Restore this event</span></a>
+        {% endif %}
+        <a class="btn btn-default" href="{% url 'eventupdate' pk=x.event.pk function='deleteperm' %} ">
+        <span>Permanently delete  this event</span></a>
+      {% endif %}
+    {% else %}
+      {% if periodsought = 'current' %}
+        {% if activeperson_status >= 30 %}
+          <a class="btn btn-default" href="{% url 'eventupdate' pk=x.event.pk function='bookinto' %}">
+          <span>Book into this event</span></a>
+          <a class="btn btn-default" href="{% url 'eventupdate' pk=x.event.pk function='leave' %}">
+          <span>Leave this event</span></a>
+        {% else %}      
+          <a class="btn btn-default" href="{% url 'eventupdate' pk=x.event.pk function='bookinto' %}">
+          <span>Click here to book into this event</span></a>
+          <a class="btn btn-default" href="{% url 'eventupdate' pk=x.event.pk function='leave' %}">
+          <span>Click here to leave this event</span></a>
+        {% endif %}
+      {% endif %}
+    {% endif %}
+    </h2>
+
+    <h2 class="item">{{ x.event.detail_public|linebreaks }}</h2>
+    {% if is_authenticated %}
+      <h2 class="item">{{ x.event.detail_private|linebreaks }}</h2>
+      {% if activeperson_status >= 30 %}
+        <h2>Event posted by:&nbsp;&nbsp;&nbsp;&nbsp;<em class='author'>{{x.event.author.first_name}}</em></h2>
+      {% endif %}
+      <h2>Attendees:</h2>
+      <h2 class="attendees">{{ x.attendees }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</a>
+    {% endif %}
+      <h2>_________________________</h2>
+  {% endfor %}
+{% endblock content %}
+    {% comment %}
+    {% endcomment %}
