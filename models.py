@@ -2,6 +2,7 @@
 from django.db                              import models
 from django.utils                           import timezone
 from django.contrib.auth.models             import User
+from users.models                           import Person
 
 class E(models.Model):
   author                  = models.ForeignKey('auth.User', related_name="author")
