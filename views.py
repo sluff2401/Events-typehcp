@@ -18,22 +18,11 @@ def event_list(request, periodsought='current'):
         activeuser                          = User.objects.get(id=request.user.id)
         activeperson                        = Person.objects.get(username=activeuser.username)
         activeperson_status                 = activeperson.status 
+        activeperson.last_login             = timezone.now()
+        activeperson.save()
     else:
         activeuser                          =  0
         activeperson_status                 =  0
-
-    '''
-    activeperson_status                     =  0
-    activeuser                              =  0
-    if request.user.is_authenticated():
-        activeuser                          =  User.objects.get(id=request.user.id)
-        activeperson_status                 =  10
-        try:
-            activeperson                    = Person.objects.get(username=activeuser.username)
-            activeperson_status             = activeperson.status 
-        except:
-            pass
-    '''
         
     events_augmented = []
     for event in events:
