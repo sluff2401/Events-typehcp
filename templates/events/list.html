@@ -14,6 +14,9 @@
     <a class="btn btn-default" href="{% url 'userlist' %}">
     <span>View members</span></a>
   {% endif %}
+  {% if activeperson_status >= 40 %}
+    <a class="btn btn-default" href="{% url 'userinsert' function='insert' %}" ><span>Add a prospective member</span></a>
+  {% endif %}
   {% if activeperson_status >= 10 %}
     <a class="btn btn-default" href="{% url 'userinsert' function='password' %}">
     <span>Change Your Password</span></a>
