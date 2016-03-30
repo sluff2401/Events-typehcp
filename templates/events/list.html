@@ -17,7 +17,7 @@
   {% if activeperson_status >= 35 %}
     <a class="btn btn-default" href="{% url 'userinsert' function='insert' %}" ><span>Add a prospective member</span></a>
   {% endif %}
-  {% if activeperson_status >= 10 %}
+  {% if activeperson_status >= 20 %}
     <a class="btn btn-default" href="{% url 'userinsert' function='password' %}">
     <span>Change Your Password</span></a>
     <a class="btn btn-default" href="{% url 'userinsert' function='displayname' %}">
@@ -69,7 +69,7 @@
     </h2>
 
     <h2 class="item">{{ x.event.detail_public|linebreaks }}</h2>
-    {% if activeperson_status >= 10 %}
+    {% if activeperson_status >= 20 %}
       <h2 class="item">{{ x.event.detail_private|linebreaks }}</h2>
       {% if activeperson_status >= 30 %}
         <h2>Event posted by (or last amended by):&nbsp;&nbsp;&nbsp;&nbsp;<em class='author'>{{x.event.author.first_name}}</em></h2>
