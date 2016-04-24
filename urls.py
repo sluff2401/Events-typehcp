@@ -4,7 +4,7 @@ from django.conf.urls        import url
 from .                       import views
 
 urlpatterns = [
-    url(r'^$',                                                   views.event_list),
+    url(r'^$',                                                   views.event_list,                   name='homepage'),
     url(r'^eventlist/(?P<periodsought>[a-z]+)/$',                views.event_list,                   name='eventlist'),
     #
     url(r'^eventdelete/(?P<pk>[0-9]+)/$',                        views.event_delete,                 name='eventdelete'),

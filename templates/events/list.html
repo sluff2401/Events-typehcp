@@ -22,7 +22,7 @@
     <span>Change Your Password</span></a>
     <a class="btn btn-default" href="{% url 'displayname' %}">
     <span>Change Your Displayed Name</span></a>
-    <a class="btn btn-default" href="{% url 'unsubscribe' %}">
+    <a class="btn btn-default" href="{% url 'unsubscribe' confirmed='no' %}">
     <span>Unsubscribe</span></a>
     {% comment %}
     <a class="btn btn-default" href="{% url 'userlist' %}">
