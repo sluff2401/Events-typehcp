@@ -1,7 +1,7 @@
 {% extends "mysite/base.html" %}
 
 {% block content %}
-  {% if activeperson_status >= 30 %}
+  {% if activeperson.status >= 30 %}
     {% if periodsought = 'current' %}
       <a class="btn btn-default" href="{% url 'eventinsert' %}" >Add a new event</span></a>
       <a class="btn btn-default" href="{% url 'eventlist' 'notcurrent' %}" >View archived events</span></a>
@@ -10,23 +10,21 @@
       <a class="btn btn-default" href="{% url 'eventlist' 'current'  %}" >View current events</span></a>
     {% endif %}
   {% endif %}
-  {% if activeperson_status >= 20 %}
+  {% if activeperson.status >= 20 %}
     <a class="btn btn-default" href="{% url 'userlist' %}">
     <span>View members</span></a>
   {% endif %}
-  {% if activeperson_status >= 35 %}
+  {% if activeperson.status >= 35 %}
     <a class="btn btn-default" href="{% url 'userinsert' %}" ><span>Add a prospective member</span></a>
   {% endif %}
-  {% if activeperson_status >= 20 %}
+  {% if activeperson.status >= 20 %}
     <a class="btn btn-default" href="{% url 'password' %}">
     <span>Change Your Password</span></a>
     <a class="btn btn-default" href="{% url 'displayname' %}">
     <span>Change Your Displayed Name</span></a>
-    <a class="btn btn-default" href="{% url 'unsubscribe' confirmed='no' %}">
-    <span>Unsubscribe</span></a>
+    <a class="btn btn-default" href="{% url 'useroptions' type='get' color='get' %}">
+    <span>Options</span></a>
     {% comment %}
-    <a class="btn btn-default" href="{% url 'userlist' %}">
-    <span>Help</span></a>
     {% endcomment %}
   {% endif %}
     <p>_________________________________________________________</p>
@@ -59,12 +57,12 @@
       {% endif %}
     {% else %}
       {% if periodsought = 'current' %}
-        {% if activeperson_status >= 30 %}
+        {% if activeperson.status >= 30 %}
           <a class="btn btn-default" href="{% url 'bookinto' pk=x.event.pk %}">
           <span>Book into this event</span></a>
           <a class="btn btn-default" href="{% url 'leave' pk=x.event.pk %}">
           <span>Leave this event</span></a>
-        {% else %}
+        {% elif activeperson.status >= 20 %}
           <a class="btn btn-default" href="{% url 'bookinto' pk=x.event.pk %}">
           <span>Click here to book into this event</span></a>
           <a class="btn btn-default" href="{% url 'leave' pk=x.event.pk %}">
@@ -75,15 +73,19 @@
     </h2>
 
     <h2 class="item">{{ x.event.detail_public|linebreaks }}</h2>
-    {% if activeperson_status >= 20 %}
+    {% if activeperson.status >= 20 %}
       <h2 class="item">{{ x.event.detail_private|linebreaks }}</h2>
-      {% if activeperson_status >= 30 %}
+      {% if activeperson.status >= 30 %}
         <h2>Event posted by (or last amended by):&nbsp;&nbsp;&nbsp;&nbsp;<em class='author'>{{x.event.author.first_name}}</em></h2>
       {% endif %}
       <h2 class="attendees"><span class='label'>Attendees:</span>&nbsp;&nbsp;{{ x.attendees }}</a>
     {% endif %}
       <h2>_________________________</h2>
   {% endfor %}
+  {% if activeperson.status >= 20 %}
+    <a class="btn btn-default" href="{% url 'unsubscribe' confirmed='no' %}">
+    <span>Unsubscribe</span></a>
+  {% endif %}
 {% endblock content %}
     {% comment %}
       <h2>Attendees:</h2>

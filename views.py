@@ -19,12 +19,14 @@ def event_list(request, periodsought='current'):
     if request.user.is_authenticated():
         activeuser                          = User.objects.get(id=request.user.id)
         activeperson                        = Person.objects.get(username=activeuser.username)
-        activeperson_status                 = activeperson.status
-        activeperson.last_login             = timezone.now()
-        activeperson.save()
+        #activeperson_status                 = activeperson.status
     else:
-        activeuser                          =  0
-        activeperson_status                 =  0
+        #activeuser                          =  0
+        #activeperson_status                 =  0
+        activeperson                        = Person.objects.get(username='default')
+        activeuser                          = User.objects.get(username='default')
+    activeperson.last_login             = timezone.now()
+    activeperson.save()
 
     events_augmented = []
     for event in events:
@@ -33,7 +35,7 @@ def event_list(request, periodsought='current'):
             attendees_list.append(attendee.first_name)
         attendees_string   = ', '.join(attendees_list)
 
-        if activeperson_status                   >=  40                         \
+        if activeperson.status                   >=  40                         \
         or event.author                          ==  activeuser:
             user_can_edit_this_event             =   True
         else:
@@ -50,7 +52,7 @@ def event_list(request, periodsought='current'):
         event_augmented = {"event":event, "attendees":attendees_string, 'user_can_edit_this_event':user_can_edit_this_event,                   'event_status_now': event_status_now}
         events_augmented.append(event_augmented)
 
-    return render(request, 'events/list.html', {'events': events_augmented, 'periodsought':periodsought, 'activeperson_status': activeperson_status})
+    return render(request, 'events/list.html', {'events': events_augmented, 'periodsought':periodsought, 'activeperson': activeperson})
 
 # functions which do not update the database
 # but do require a pk as they refer to an existing record
@@ -269,7 +271,10 @@ def event_repeat(request, pk):
         return render(request, 'events/insert_update.html', {'form': form})
     else:                                                                                  # i.e. form is not valid, ask user to resubmit it
       return render(request, 'events/insert_update.html', {'form': form})
+
+
 '''
+@login_required
      ------------------------------------------------------
   ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
