@@ -75,7 +75,7 @@
     <h2 class="item">{{ x.event.detail_public|linebreaks }}</h2>
     {% if activeperson.status >= 20 %}
       <h2 class="item">{{ x.event.detail_private|linebreaks }}</h2>
-      {% if activeperson.status >= 30 %}
+      {% if activeperson.status >= 40 %}
         <h2>Event posted by (or last amended by):&nbsp;&nbsp;&nbsp;&nbsp;<em class='author'>{{x.event.author.first_name}}</em></h2>
       {% endif %}
       <h2 class="attendees"><span class='label'>Attendees:</span>&nbsp;&nbsp;{{ x.attendees }}</a>
