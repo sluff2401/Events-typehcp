@@ -17,7 +17,7 @@
   {% if activeperson.status >= 35 %}
     <a class="btn btn-default" href="{% url 'userinsert' %}" ><span>Add a prospective member</span></a>
   {% endif %}
-  {% if activeperson.status >= 20 %}
+  {% if activeperson.status >= 15 %}
     <a class="btn btn-default" href="{% url 'password' %}">
     <span>Change Your Password</span></a>
     <a class="btn btn-default" href="{% url 'displayname' %}">
@@ -73,7 +73,7 @@
     </h2>
 
     <h2 class="item">{{ x.event.detail_public|linebreaks }}</h2>
-    {% if activeperson.status >= 20 %}
+    {% if activeperson.status >= 15 %}
       <h2 class="item">{{ x.event.detail_private|linebreaks }}</h2>
       {% if activeperson.status >= 40 %}
         <h2>Event posted by (or last amended by):&nbsp;&nbsp;&nbsp;&nbsp;<em class='author'>{{x.event.author.first_name}}</em></h2>
@@ -82,7 +82,7 @@
     {% endif %}
       <h2>_________________________</h2>
   {% endfor %}
-  {% if activeperson.status >= 20 %}
+  {% if activeperson.status >= 15 %}
     <a class="btn btn-default" href="{% url 'unsubscribe' confirmed='no' %}">
     <span>Unsubscribe</span></a>
   {% endif %}
