@@ -17,7 +17,7 @@
   {% if activeperson.status >= 35 %}
     <a class="btn btn-default" href="{% url 'userinsert' %}" ><span>Add a prospective member</span></a>
   {% endif %}
-  {% if activeperson.status >= 15 %}
+  {% if activeperson.status >= 20 %}
     <a class="btn btn-default" href="{% url 'password' %}">
     <span>Change Your Password</span></a>
     <a class="btn btn-default" href="{% url 'displayname' %}">
