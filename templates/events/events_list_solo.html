@@ -11,11 +11,11 @@
     {% endif %}
   {% endif %}
   {% if activeperson.status >= 20 %}
-    <a class="btn btn-default" href="{% url 'userlist' %}">
+    <a class="btn btn-default" href="{% url 'contactlist' %}">
     <span>View members</span></a>
   {% endif %}
   {% if activeperson.status >= 35 %}
-    <a class="btn btn-default" href="{% url 'userinsert' %}" ><span>Add a prospective member</span></a>
+    <a class="btn btn-default" href="{% url 'contactinsert' %}" ><span>Add a contact</span></a>
   {% endif %}
   {% if activeperson.status >= 20 %}
     <a class="btn btn-default" href="{% url 'password' %}">
@@ -30,24 +30,11 @@
     <p>_________________________________________________________</p>
   {% for x in events %}
     <h2>
-    {{ x.event.e_date|date:"l" }}
-    {{ x.event.e_date|date:"jS F Y" }}
+    {{ x.event.e_date|date:"l jS F Y" }}
 
     {% if x.user_can_edit_this_event = True %}
+    {% comment %}
       {% if periodsought = 'current' %}
-        {% if is_club %}
-          <a class="btn btn-default" href="{% url 'bookinto' pk=x.event.pk %}">
-          <span>Book into this event</span></a>
-          <a class="btn btn-default" href="{% url 'leave' pk=x.event.pk %}">
-          <span>Leave this event</span></a>
-          <a class="btn btn-default" href="{% url 'eventupdate' pk=x.event.pk %} ">
-          <span>Change this event</span></a>
-          <a class="btn btn-default" href="{% url 'eventrepeat' pk=x.event.pk %} ">
-          <span>Repeat this event</span></a>
-          <a class="btn btn-default" href="{% url 'eventdelete' pk=x.event.pk %}">
-          <span>Delete this event</span></a>
-        {% endif %}
-      {% else %}
         {% if x.event_status_now = 'past'%}
           <a class="btn btn-default" href="{% url 'eventrepeat' pk=x.event.pk %} ">
           <span>Publish this event with a current date</span></a>
@@ -58,45 +45,15 @@
         <a class="btn btn-default" href="{% url 'eventdeleteperm' pk=x.event.pk %} ">
         <span>Permanently delete  this event</span></a>
       {% endif %}
-    {% else %}
-      {% if periodsought = 'current' %}
-        {% if is_club %}
-          {% if activeperson.status >= 30 %}
-            <a class="btn btn-default" href="{% url 'bookinto' pk=x.event.pk %}">
-            <span>Book into this event</span></a>
-            <a class="btn btn-default" href="{% url 'leave' pk=x.event.pk %}">
-            <span>Leave this event</span></a>
-          {% elif activeperson.status >= 20 %}
-            <a class="btn btn-default" href="{% url 'bookinto' pk=x.event.pk %}">
-            <span>Click here to book into this event</span></a>
-            <a class="btn btn-default" href="{% url 'leave' pk=x.event.pk %}">
-            <span>Click here to leave this event</span></a>
-          {% endif %}
-        {% endif %}
-      {% endif %}
-    {% endif %}
+     {% endcomment %}
     </h2>
-
-    {% if is_club %}
-      <h2 class="item">{{ x.event.detail_public|linebreaks }}</h2>
-      {% if activeperson.status >= 15 %}
-        <h2 class="item">{{ x.event.detail_private|linebreaks }}</h2>
-        {% if activeperson.status >= 40 %}
-          <h2>Event posted by (or last amended by):&nbsp;&nbsp;&nbsp;&nbsp;<em class='author'>{{x.event.author.first_name}}</em></h2>
-        {% endif %}
-        <h2 class="attendees"><span class='label'>Attendees:</span>&nbsp;&nbsp;{{ x.attendees }}</a>
-      {% endif %}
-      <h2>_________________________</h2>
-    {% else %}
       <h2 class="item">
-          {% comment %}
         <a class="btn btn-default" href="{% url 'eventupdate' pk=x.event.pk %} ">
         <span class="glyphicon glyphicon-pencil"></span></a>
         <a class="btn btn-default" href="{% url 'eventdelete' pk=x.event.pk %}">
         <span class="glyphicon glyphicon-remove"></span></a>
-        {% endcomment %}
         <a class="item" href="{% url 'eventdetail' pk=x.event.pk %}">
-        <span>{{ x.event.detail_private }}</span></a>
+        <span>{{ x.event.detail_private|linebreaks }}</span></a>
       </h2>
         {% comment %}
             <span>{{ x.event.detail_private|linebreaks }}</span></a>
@@ -104,8 +61,7 @@
           <h2 class="attendees"><span class='label'>Attendees:</span>&nbsp;&nbsp;{{ x.attendees }}</a>
         {% endcomment %}
     {% endif %}
-
-  {% endfor %}
+ {% endfor %}
   {% if activeperson.status >= 15 %}
     <a class="btn btn-default" href="{% url 'unsubscribe' confirmed='no' %}">
     <span>Unsubscribe</span></a>

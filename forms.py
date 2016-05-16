@@ -1,6 +1,7 @@
 from django                                 import forms
 from django.forms.widgets                   import CheckboxSelectMultiple
 from .models                                import E
+from users.models                           import Person
 from django.contrib.auth.models             import User
 
 class EForm(forms.ModelForm):
@@ -10,7 +11,7 @@ class EForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(EForm, self).__init__(*args, **kwargs)
         self.fields["attendees"].widget = CheckboxSelectMultiple()
-        self.fields["attendees"].queryset = User.objects.order_by('username')
+        self.fields["attendees"].queryset = Person.objects.order_by('username')
 
 class E2Form(forms.ModelForm):
     class Meta:

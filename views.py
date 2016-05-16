@@ -3,18 +3,24 @@ from django.utils                   import timezone
 from django.contrib.auth.decorators import login_required
 
 from django.contrib.auth.models     import User
-from .models                        import E
 from users.models                   import Person
+from .models                        import E
 
 from .forms                         import EForm, E2Form
+
+from mysite.settings                import IS_CLUB, TITLE
 
 # functions which do not update the database
 # and don't require a pk as they don't refer to an specific record
 def event_list(request, periodsought='current'):
+
     if periodsought == 'current':
         events = E.objects.filter(is_live=True, e_date__gte=timezone.now()).order_by('e_date')
     else:
         events = E.objects.exclude(is_live=True, e_date__gte=timezone.now()).order_by('-e_date')
+
+
+
 
     if request.user.is_authenticated():
         activeuser                          = User.objects.get(id=request.user.id)
@@ -29,10 +35,11 @@ def event_list(request, periodsought='current'):
     activeperson.save()
 
     events_augmented = []
+    stored_event_date = '2000-01-01'
     for event in events:
         attendees_list = []
         for attendee in event.attendees.all():
-            attendees_list.append(attendee.first_name)
+            attendees_list.append(attendee.display_name)
         attendees_string   = ', '.join(attendees_list)
 
         if activeperson.status                   >=  40                         \
@@ -49,14 +56,40 @@ def event_list(request, periodsought='current'):
           event_status_now                       = 'deletednonpast'
 
 
-        event_augmented = {"event":event, "attendees":attendees_string, 'user_can_edit_this_event':user_can_edit_this_event,                   'event_status_now': event_status_now}
+        if IS_CLUB:
+          pass
+        else:
+          current_event_date = event.e_date
+          if event.e_date == stored_event_date:
+            event.e_date = ''
+          stored_event_date = current_event_date
+
+
+        event_augmented = {"event":event, "attendees":attendees_string, 'user_can_edit_this_event':user_can_edit_this_event, 'event_status_now': event_status_now}
         events_augmented.append(event_augmented)
 
-    return render(request, 'events/list.html', {'events': events_augmented, 'periodsought':periodsought, 'activeperson': activeperson})
-
+    if IS_CLUB:
+      return render(request, 'events/events_list_club.html', {'events': events_augmented, 'periodsought':periodsought, 'activeperson': activeperson, 'title': TITLE})
+    else:
+      return render(request, 'events/events_list_solo.html', {'events': events_augmented, 'periodsought':periodsought, 'activeperson': activeperson, 'title': TITLE})
 # functions which do not update the database
 # but do require a pk as they refer to an existing record
-#        None. There is no detail page, everything is on the main event list.
+@login_required
+def event_detail(request, pk):
+  event                                 =  get_object_or_404(E, pk=pk)     # get details of event to be updated/displayed/deleted
+
+  if event.e_date                     <  timezone.localtime(timezone.now()).date():
+    event_status_now                      =  'past'
+  elif event.is_live                      == False:
+    event_status_now                      =  'deletednonpast'
+  else:
+    event_status_now                      =  'live'
+
+  persons_list = []
+  for person in event.attendees.all():
+    persons_list.append(person.display_name)
+  persons_string   = ', '.join(persons_list)
+  return render(request, 'events/event_detail.html', {'event': event, 'event_status_now': event_status_now, 'persons':persons_string})
 
 
 # functions which update the database using parameters in the url, without using forms
@@ -93,7 +126,8 @@ def bookinto(request, pk):
     periodsought                          = 'notcurrent'
   else:
     periodsought                          = 'current'
-  updated_attendee = User.objects.get(id=request.user.id)        #(username = request.user)
+  activeuser = User.objects.get(id=request.user.id)        #(username = request.user)
+  updated_attendee = Person.objects.get(username=activeuser.username)        #(username = request.user)
   event.attendees.add(updated_attendee)
   event.save()
   return redirect('events.views.event_list', periodsought)
@@ -105,7 +139,8 @@ def leave(request, pk):
     periodsought                          = 'notcurrent'
   else:
     periodsought                          = 'current'
-  updated_attendee = User.objects.get(id=request.user.id)          #(username = request.user)
+  activeuser = User.objects.get(id=request.user.id)        #(username = request.user)
+  updated_attendee = Person.objects.get(username=activeuser.username)        #(username = request.user)
   event.attendees.remove(updated_attendee)
   event.save()
   return redirect('events.views.event_list', periodsought)

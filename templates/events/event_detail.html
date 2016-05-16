@@ -1,0 +1,82 @@
+{% extends "mysite/base.html" %}
+{% block content %}
+  <div class="person">
+    <h2>
+    <a class="btn btn-default" href="{% url 'eventlist'   'current'  %}" ><span>View current events</span></a>
+    <a class="btn btn-default" href="{% url 'eventlist'   'notcurrent' %}" ><span>View past events and deleted events</span></a>
+    <a class="btn btn-default" href="{% url 'eventinsert' %}" ><span>Add a new event</span></a>
+    </h2>
+    </h2>
+    <a class="btn btn-default" href="{% url 'eventupdate' pk=event.pk %}">
+    <span>Update this event</span></a>
+    {% if event_status_now = 'live' %}
+      <a class="btn btn-default" href="{% url 'eventdelete' pk=event.pk %}">
+      <span>Mark this event as deleted</span></a>
+      <a class="btn btn-default" href="{% url 'eventrepeat' pk=event.pk %} ">
+      <span>Repeat this event</span></a>
+    {% else %}
+      {% if event_status_now = 'deletednonpast' %}
+        <a class="btn btn-default" href="{% url 'eventrestore' pk=event.pk %} ">
+        <span>Restore this event</span></a>
+      {% else %}
+        <a class="btn btn-default" href="{% url 'eventrepeat' pk=event.pk %} ">
+        <span>Publish this event with a current date</span></a>
+      {% endif %}
+      <a class="btn btn-default" href="{% url 'eventdeleteperm' pk=event.pk %} ">
+      <span>Delete this event irrevocably</span></a>
+    {% endif %}
+
+    <h2 class="date">
+    <span class="date">{{event.e_date|date:"l" }} {{event.e_date|date:"jS F Y"}}</span>
+    </h2>
+
+    <h2 class="date">
+    <span class="item">{{ event.detail_private }}</span>
+    </h2>
+    {% if persons %}
+      <h2 class="date">Persons</h2><h2 class="item">{{ persons }}</h2>
+    {% endif %}
+    {% if event.notes %}
+      <h2 class="date">Notes</h2><h2 class="item">{{ event.notes }}</h2>
+    {% endif %}
+  </div>
+
+
+{% endblock %}
+
+
+
+
+{% comment %}
+{% extends "mysite/base.html" %}
+
+{% block content %}
+{% if error_message %}
+  <h1> {{error_message}}</h1>
+{% endif %}
+
+  <div class="person">
+    <h2>
+    <a class="btn btn-default" href="{% url 'userlist' %}" ><span>View users</span></a>
+    <a class="btn btn-default" href="{% url 'homepage' %}">View Events</a>
+    </h2>
+
+    {% if can_update %}
+      <a class="btn btn-default" href="{% url 'eventupdate' pk=event.pk %}">
+      <span>Update this event</span></a>
+      <a class="btn btn-default" href="{% url 'eventdelete' pk=event.pk %}">
+      <span>Remove this event</span></a>
+    {% endif %}
+  <table>
+  <h2>
+    <tr><td>&nbsp;&nbsp;{{ person.username }}&nbsp;</td>
+        <td>{{ event.author }}&nbsp;</td>
+        <td>{{ event.e_date }}&nbsp;</td>
+        <td>{{ event.detail_public }}&nbsp;</td>
+        <td>{{ event.detail_private }}&nbsp;</td>
+        <td>{{ event.attendees }}&nbsp;</td>
+  </h2>
+  </table>
+  </div>
+{% endblock %}
+{% endcomment %}
