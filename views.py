@@ -72,6 +72,7 @@ def event_list(request, periodsought='current'):
       return render(request, 'events/events_list_club.html', {'events': events_augmented, 'periodsought':periodsought, 'activeperson': activeperson, 'title': TITLE})
     else:
       return render(request, 'events/events_list_solo.html', {'events': events_augmented, 'periodsought':periodsought, 'activeperson': activeperson, 'title': TITLE})
+
 # functions which do not update the database
 # but do require a pk as they refer to an existing record
 @login_required
