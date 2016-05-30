@@ -16,6 +16,7 @@ urlpatterns = [
     #
     url(r'^eventinsert/$',                                       views.event_insert,                 name='eventinsert'),
     url(r'^eventupdate/(?P<pk>[0-9]+)/$',                        views.event_update,                 name='eventupdate'),
+    url(r'^attendeesupdate/(?P<pk>[0-9]+)/$',                    views.attendees_update,             name='attendeesupdate'),
     url(r'^eventrepeat/(?P<pk>[0-9]+)/$',                        views.event_repeat,                 name='eventrepeat'),
   #
   #

@@ -3,30 +3,41 @@
 {% block content %}
   {% if activeperson.status >= 30 %}
     {% if periodsought = 'current' %}
-      <a class="btn btn-default" href="{% url 'eventinsert' %}" >Add a new event</span></a>
+      <a class="btn btn-default" href="{% url 'eventinsert' %}" >Add an event</span></a>
       <a class="btn btn-default" href="{% url 'eventlist' 'notcurrent' %}" >View archived events</span></a>
     {% else %}
       <h1> Events that have either been deleted or have become outdated</h1>
       <a class="btn btn-default" href="{% url 'eventlist' 'current'  %}" >View current events</span></a>
     {% endif %}
   {% endif %}
+
   {% if activeperson.status >= 20 %}
     <a class="btn btn-default" href="{% url 'memberlist' %}">
     <span>View members</span></a>
   {% endif %}
+
   {% if activeperson.status >= 35 %}
-    <a class="btn btn-default" href="{% url 'memberinsert' %}" ><span>Add a member</span></a>
+    <a class="btn btn-default" href="{% url 'memberinsert' %}" >
+    <span>Add a member</span></a>
   {% endif %}
+
+  {% if activeperson.status >= 30 %}
+    <a class="btn btn-default" href="{% url 'contactinsert' %}" >
+    <span>Add a contact</span></a>
+  {% endif %}
+
   {% if activeperson.status >= 20 %}
     <a class="btn btn-default" href="{% url 'password' %}">
     <span>Change Your Password</span></a>
     <a class="btn btn-default" href="{% url 'displayname' %}">
     <span>Change Your Displayed Name</span></a>
     <a class="btn btn-default" href="{% url 'useroptions' type='get' color='get' whence='events' %}">
-    <span>Options</span></a>
+    <span>Settings</span></a>
+  {% endif %}
+
     {% comment %}
     {% endcomment %}
-  {% endif %}
+
     <p>_________________________________________________________</p>
   {% for x in events %}
     <h2>
@@ -45,6 +56,8 @@
           <span>Change this event</span></a>
           <a class="btn btn-default" href="{% url 'eventrepeat' pk=x.event.pk %} ">
           <span>Repeat this event</span></a>
+          <a class="btn btn-default" href="{% url 'attendeesupdate' pk=x.event.pk %} ">
+          <span>Update attendees</span></a>
           <a class="btn btn-default" href="{% url 'eventdelete' pk=x.event.pk %}">
           <span>Delete this event</span></a>
       {% else %}
@@ -52,7 +65,7 @@
           <a class="btn btn-default" href="{% url 'eventrepeat' pk=x.event.pk %} ">
           <span>Publish this event with a current date</span></a>
         {% else %}                                                                   {# i.e. event_status_now is 'live' or 'deletednonpast' #}
-          <a class="btn btn-default" href="{% url 'restore' pk=x.event.pk %} ">
+          <a class="btn btn-default" href="{% url 'eventrestore' pk=x.event.pk %} ">
           <span>Restore this event</span></a>
         {% endif %}
         <a class="btn btn-default" href="{% url 'eventdeleteperm' pk=x.event.pk %} ">

@@ -6,7 +6,7 @@ from django.contrib.auth.models     import User
 from users.models                   import Person
 from .models                        import E
 
-from .forms                         import EForm, E2Form
+from .forms                         import EventForm, AttendeeForm
 
 from mysite.settings                import IS_CLUB, TITLE
 
@@ -19,16 +19,10 @@ def event_list(request, periodsought='current'):
     else:
         events = E.objects.exclude(is_live=True, e_date__gte=timezone.now()).order_by('-e_date')
 
-
-
-
     if request.user.is_authenticated():
         activeuser                          = User.objects.get(id=request.user.id)
         activeperson                        = Person.objects.get(username=activeuser.username)
-        #activeperson_status                 = activeperson.status
     else:
-        #activeuser                          =  0
-        #activeperson_status                 =  0
         activeperson                        = Person.objects.get(username='default')
         activeuser                          = User.objects.get(username='default')
     activeperson.last_login             = timezone.now()
@@ -69,9 +63,11 @@ def event_list(request, periodsought='current'):
         events_augmented.append(event_augmented)
 
     if IS_CLUB:
-      return render(request, 'events/events_list_club.html', {'events': events_augmented, 'periodsought':periodsought, 'activeperson': activeperson, 'title': TITLE})
+      return render(request, 'events/events_list_club.html', \
+      {'events': events_augmented, 'periodsought':periodsought, 'activeperson': activeperson, 'title': TITLE, 'IS_CLUB': IS_CLUB})
     else:
-      return render(request, 'events/events_list_solo.html', {'events': events_augmented, 'periodsought':periodsought, 'activeperson': activeperson, 'title': TITLE})
+      return render(request, 'events/events_list_solo.html', \
+      {'events': events_augmented, 'periodsought':periodsought, 'activeperson': activeperson, 'title': TITLE, 'IS_CLUB': IS_CLUB})
 
 # functions which do not update the database
 # but do require a pk as they refer to an existing record
@@ -166,16 +162,10 @@ def event_insert(request):
   activeuser                                  =  User.objects.get(id=request.user.id)
   activeperson                                =  Person.objects.get(username=activeuser.username)
   if request.method                           != 'POST':
-    if activeperson.status                  >= 40:
-      form = EForm()
-    else:
-      form = E2Form()
+    form = EventForm()
     return render(request, 'events/insert_update.html', {'form': form})                   # ask user for event details
   else:
-    if activeperson.status                  >= 40:
-      form = EForm(request.POST)
-    else:
-      form = E2Form(request.POST)
+    form = EventForm(request.POST)
     if form.is_valid():
       event                                   = form.save(commit=False)
       if event.e_date                         < timezone.localtime(timezone.now()).date():
@@ -206,6 +196,7 @@ def event_insert(request):
 
 # functions which update the database in two stages,  using forms
 # and do require a pk as they refer to an existing record
+
 @login_required
 def event_update(request, pk):
   activeuser                                  =  User.objects.get(id=request.user.id)
@@ -214,17 +205,10 @@ def event_update(request, pk):
                                               # i.e. function in ['detail', 'update', 'repeat',
                                               #'restore', 'bookinto', 'leave', 'delete', 'deleteperm']
   if request.method                           != 'POST':
-    if activeperson.status                  >= 40:
-      form = EForm(instance=event)
-    else:
-      form = E2Form(instance=event)
-      #form = EForm(instance=event)
+    form = EventForm(instance=event)
     return render(request, 'events/insert_update.html', {'form': form})                   # ask user for event details
   else:
-    if activeperson.status                  >= 40:
-      form = EForm(request.POST, instance=event)
-    else:
-      form = E2Form(request.POST, instance=event)
+    form = EventForm(request.POST, instance=event)
     if form.is_valid():
       event                                   = form.save(commit=False)
       if event.e_date                         < timezone.localtime(timezone.now()).date():
@@ -253,27 +237,59 @@ def event_update(request, pk):
       return render(request, 'events/insert_update.html', {'form': form})
 
 @login_required
+def attendees_update(request, pk):
+  activeuser                                  =  User.objects.get(id=request.user.id)
+  activeperson                                =  Person.objects.get(username=activeuser.username)
+  event                                     = get_object_or_404(E, pk=pk)
+
+  if request.method                           != 'POST':
+    form = AttendeeForm(instance=event)
+    return render(request, 'events/insert_update.html', {'form': form})                   # ask user for event details
+  else:
+    form = AttendeeForm(request.POST, instance=event)
+    if form.is_valid():
+      event                                   = form.save(commit=False)
+      if event.e_date                         < timezone.localtime(timezone.now()).date():
+        error_message                         = 'event date cannot be in the past, please enter a valid date'
+        return render(request, 'events/insert_update.html', {'form': form, 'error_message': error_message})
+                                              # events cannot be posted for dates in past
+      else:
+        periodsought                          = 'current'
+      activeperson_status                     =  0
+      if request.user.is_authenticated():
+        activeuser                          =  User.objects.get(id=request.user.id)
+        activeperson_status                 =  20
+        try:
+          activeperson                    = Person.objects.get(username=activeuser.username)
+          activeperson_status             = activeperson.status
+        except:
+          pass
+      if activeperson_status                >= 40                              \
+      or event.author                       == activeuser:
+        event.save()
+        form.save_m2m()
+        return redirect('events.views.event_list', periodsought)
+      else:
+        return render(request, 'events/insert_update.html', {'form': form})
+    else:                                                                                  # i.e. form is not valid, ask user to resubmit it
+      return render(request, 'events/insert_update.html', {'form': form})
+
+
+@login_required
 def event_repeat(request, pk):
   activeuser                                  =  User.objects.get(id=request.user.id)
   activeperson                                =  Person.objects.get(username=activeuser.username)
   event                                     = get_object_or_404(E, pk=pk)
 
   if request.method                           != 'POST':
-    if activeperson.status                  >= 40:
-      form = EForm(instance=event)
-    else:
-      form = E2Form(instance=event)
-      #form = EForm(instance=event)
+    form = EventForm(instance=event)
     return render(request, 'events/insert_update.html', {'form': form})                   # ask user for event details
   else:
-    if activeperson.status                  >= 40:
-      form                                    = EForm(request.POST)
-      form_original                           = EForm(request.POST, instance=event)
-    else:
-      form                                    = E2Form(request.POST)
-      form_original                           = E2Form(request.POST, instance=event)
+    form                                    = EventForm(request.POST)
+    form_original                           = EventForm(request.POST, instance=event)
     if form_original.is_valid():
       event_original                          = form_original.save(commit=False)
+
 
     if form.is_valid():
       event                                   = form.save(commit=False)
@@ -307,119 +323,3 @@ def event_repeat(request, pk):
         return render(request, 'events/insert_update.html', {'form': form})
     else:                                                                                  # i.e. form is not valid, ask user to resubmit it
       return render(request, 'events/insert_update.html', {'form': form})
-
-
-'''
-@login_required
-     ------------------------------------------------------
-  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-     def event_process(request, pk='0', function="update"):
-  if function                                 != 'insert':
-    event                                     = get_object_or_404(E, pk=pk)
-                                              # i.e. function in ['detail', 'update', 'repeat',
-                                              #'restore', 'bookinto', 'leave', 'delete', 'deleteperm']
-
-  if request.method                           != 'POST':                                  # i.e. request.method == "GET"
-    if function                               in ['delete', 'deleteperm', 'bookinto', 'leave', 'restore', ]:
-      if event.e_date                         < timezone.localtime(timezone.now()).date():
-        # decide which period of events to display afterwards
-        periodsought                          = 'notcurrent'
-      else:
-        periodsought                          = 'current'
-      if function                             == 'delete':
-        event.is_live                         = False
-        event.save()
-        return redirect('events.views.event_list', periodsought)
-      elif function                           == 'deleteperm':
-        event.delete()
-        return redirect('events.views.event_list', periodsought)
-      elif function                           == 'bookinto':
-        updated_attendee = User.objects.get(username = request.user)
-        event.attendees.add(updated_attendee)
-        event.save()
-        return redirect('events.views.event_list', periodsought)
-      elif function                           == 'leave':
-        updated_attendee = User.objects.get(username = request.user)
-        event.attendees.remove(updated_attendee)
-        event.save()
-        return redirect('events.views.event_list', periodsought)
-      else:                                                                                 # i.e. function == 'restore'
-        event.is_live                         = True
-        event.save()
-        return redirect('events.views.event_list', periodsought)
-    elif function                             == 'detail':
-        return render(request, 'diaryandcontacts/event_detail.html', {'event': item})       # no data input, just buttons
-    elif function                             == 'insert':
-      form = EForm()
-      return render(request, 'events/insert_update.html', {'form': form})                   # ask user for event details
-    else:                                                                                   # i.e. function in ['update','repeat']
-      form = EForm(instance=event)
-      return render(request, 'events/insert_update.html', {'form': form})                   # ask user for event details
-  else:                                                                         # i.e. have arrived here from 'events/insert_update.html'
-    if function                               == 'insert':
-      form                                    = EForm(request.POST)
-    elif function                             == 'repeat':
-      form                                    = EForm(request.POST)
-      form_original                           = EForm(request.POST, instance=event)
-      if form_original.is_valid():
-        event_original                        = form_original.save(commit=False)
-    else:                                     # i.e. function == 'update', others don't do here
-      form                                    = EForm(request.POST, instance=event)
-
-    if form.is_valid():
-      event                                   = form.save(commit=False)
-      if event.e_date                         < timezone.localtime(timezone.now()).date():
-        error_message                         = 'event date cannot be in the past, please enter a valid date'
-        return render(request, 'events/insert_update.html', {'form': form, 'error_message': error_message})
-                                              # events cannot be posted for dates in past
-      else:
-        periodsought                          = 'current'
-
-      activeperson_status                     =  0
-      if request.user.is_authenticated():
-          activeuser                               =  User.objects.get(id=request.user.id)
-          activeperson_status                 =  10
-          try:
-              activeperson                    = Person.objects.get(username=activeuser.username)
-              activeperson_status             = activeperson.status
-          except:
-              pass
-
-
-
-
-      if function                             == 'insert':
-        event.author_name                     = activeuser.username
-        event.author                          = activeuser
-        if activeperson_status                >= 30:
-          pass
-        else:                                 # user is not authorized to insert event
-          return render(request, 'events/insert_update.html', {'form': form})
-      elif function                           == 'update':
-        if activeperson_status                >= 40                              \
-        or event.author                       == activeuser:
-          pass
-        else:
-          return render(request, 'events/insert_update.html', {'form': form})
-      else:                                   # i.e. function == 'repeat'
-        event.author_name                     = activeuser.username
-        event.author                          = activeuser
-        if activeperson_status                >= 40                               \
-        or event_original.author              == activeuser:
-          pass
-        else:                                                                              # user is not authorized to edit this event
-          return render(request, 'events/insert_update.html', {'form': form_original})
-
-      event.save()
-      form.save_m2m()
-
-      return redirect('events.views.event_list', periodsought)
-
-    else:                                                                                  # i.e. form is not valid, ask user to resubmit it
-      return render(request, 'events/insert_update.html', {'form': form})
-'''
-
-
-
