@@ -4,9 +4,10 @@ from django.contrib.auth.decorators import login_required
 
 from django.contrib.auth.models     import User
 from users.models                   import Person
+from mysite.models                  import ClubSettings
 from .models                        import E
 
-from .forms                         import EventForm, AttendeeForm
+from .forms                         import EventForm, HostForm, AttendeeForm
 
 from mysite.settings                import IS_CLUB, TITLE
 
@@ -31,13 +32,20 @@ def event_list(request, periodsought='current'):
     events_augmented = []
     stored_event_date = '2000-01-01'
     for event in events:
+
+        hosts_list = []
+        for host in event.hosts.all():
+            hosts_list.append(host.display_name)
+        hosts_string   = ', '.join(hosts_list)
+
         attendees_list = []
         for attendee in event.attendees.all():
             attendees_list.append(attendee.display_name)
         attendees_string   = ', '.join(attendees_list)
 
         if activeperson.status                   >=  40                         \
-        or event.author                          ==  activeuser:
+        or event.author                          ==  activeuser                 \
+        or activeperson in event.hosts.all():
             user_can_edit_this_event             =   True
         else:
             user_can_edit_this_event             =   False
@@ -59,15 +67,22 @@ def event_list(request, periodsought='current'):
           stored_event_date = current_event_date
 
 
-        event_augmented = {"event":event, "attendees":attendees_string, 'user_can_edit_this_event':user_can_edit_this_event, 'event_status_now': event_status_now}
+        event_augmented = \
+        {"event":event, "attendees":attendees_string, "hosts":hosts_string, 'user_can_edit_this_event':user_can_edit_this_event, 'event_status_now': event_status_now}
         events_augmented.append(event_augmented)
 
+    sitesettings                          =  get_object_or_404(ClubSettings)
+    return render(request, 'events/events_list_club.html', \
+    {'events': events_augmented, 'periodsought':periodsought, 'activeperson': activeperson, 'title': TITLE, 'IS_CLUB': IS_CLUB, 'sitesettings': sitesettings})
+
+    '''
     if IS_CLUB:
       return render(request, 'events/events_list_club.html', \
       {'events': events_augmented, 'periodsought':periodsought, 'activeperson': activeperson, 'title': TITLE, 'IS_CLUB': IS_CLUB})
     else:
       return render(request, 'events/events_list_solo.html', \
       {'events': events_augmented, 'periodsought':periodsought, 'activeperson': activeperson, 'title': TITLE, 'IS_CLUB': IS_CLUB})
+    '''
 
 # functions which do not update the database
 # but do require a pk as they refer to an existing record
@@ -186,6 +201,9 @@ def event_insert(request):
       if activeperson_status                >= 30:
         event.author_name                     = activeuser.username
         event.author                          = activeuser
+        updated_host                      = Person.objects.get(username=activeuser.username)        #(username = request.user)
+        event.save()
+        event.hosts.add(updated_host)
         event.save()
         form.save_m2m()
         return redirect('events.views.event_list', periodsought)
@@ -226,8 +244,50 @@ def event_update(request, pk):
           activeperson_status             = activeperson.status
         except:
           pass
-      if activeperson_status                >= 40                              \
-      or event.author                       == activeuser:
+      if activeperson_status                   >=  40                         \
+      or event.author                          ==  activeuser                 \
+      or activeperson in event.hosts.all():
+        event.save()
+        form.save_m2m()
+        return redirect('events.views.event_list', periodsought)
+      else:
+        return render(request, 'events/insert_update.html', {'form': form})
+    else:                                                                                  # i.e. form is not valid, ask user to resubmit it
+      return render(request, 'events/insert_update.html', {'form': form})
+
+@login_required
+def hosts_update(request, pk):
+  activeuser                                  =  User.objects.get(id=request.user.id)
+  activeperson                                =  Person.objects.get(username=activeuser.username)
+  event                                     = get_object_or_404(E, pk=pk)
+
+  if request.method                           != 'POST':
+    form = HostForm(instance=event)
+    return render(request, 'events/insert_update.html', {'form': form})                   # ask user for event details
+  else:
+    form = HostForm(request.POST, instance=event)
+    if form.is_valid():
+      event                                   = form.save(commit=False)
+      if event.e_date                         < timezone.localtime(timezone.now()).date():
+        error_message                         = 'event date cannot be in the past, please enter a valid date'
+        return render(request, 'events/insert_update.html', {'form': form, 'error_message': error_message})
+                                              # events cannot be posted for dates in past
+      else:
+        periodsought                          = 'current'
+
+      activeperson_status                     =  0
+
+      if request.user.is_authenticated():
+        activeuser                          =  User.objects.get(id=request.user.id)
+        try:
+          activeperson                    = Person.objects.get(username=activeuser.username)
+          activeperson_status             = activeperson.status
+        except:
+          pass
+
+      if activeperson_status                   >=  40                         \
+      or event.author                          ==  activeuser                 \
+      or activeperson in event.hosts.all():
         event.save()
         form.save_m2m()
         return redirect('events.views.event_list', periodsought)
@@ -251,11 +311,12 @@ def attendees_update(request, pk):
       event                                   = form.save(commit=False)
       if event.e_date                         < timezone.localtime(timezone.now()).date():
         error_message                         = 'event date cannot be in the past, please enter a valid date'
-        return render(request, 'events/insert_update.html', {'form': form, 'error_message': error_message})
-                                              # events cannot be posted for dates in past
+        return render(request, 'events/insert_update.html', {'form': form, 'error_message': error_message})                                            # events cannot be posted for dates in past
       else:
         periodsought                          = 'current'
+
       activeperson_status                     =  0
+
       if request.user.is_authenticated():
         activeuser                          =  User.objects.get(id=request.user.id)
         activeperson_status                 =  20
@@ -264,8 +325,9 @@ def attendees_update(request, pk):
           activeperson_status             = activeperson.status
         except:
           pass
-      if activeperson_status                >= 40                              \
-      or event.author                       == activeuser:
+      if activeperson_status                   >=  40                         \
+      or event.author                          ==  activeuser                 \
+      or activeperson in event.hosts.all():
         event.save()
         form.save_m2m()
         return redirect('events.views.event_list', periodsought)
@@ -308,17 +370,17 @@ def event_repeat(request, pk):
           activeperson_status             = activeperson.status
         except:
           pass
-      if activeperson_status                >= 40                              \
-      or event_original.author                       == activeuser:
+      if activeperson_status                   >=  40                         \
+      or event_original.author                 ==  activeuser                 \
+      or activeperson in event_original.hosts.all():
         event.author_name                     = activeuser.username
         event.author                          = activeuser
-        if activeperson_status                >= 40                               \
-        or event_original.author              == activeuser:
-          event.save()
-          form.save_m2m()
-          return redirect('events.views.event_list', periodsought)
-        else:                                                                              # user is not authorized to edit this event
-          return render(request, 'events/insert_update.html', {'form': form_original})
+        updated_host                          = Person.objects.get(username=activeuser.username)        #(username = request.user)
+        event.save()
+        event.hosts.add(updated_host)
+        event.save()
+        form.save_m2m()
+        return redirect('events.views.event_list', periodsought)
       else:
         return render(request, 'events/insert_update.html', {'form': form})
     else:                                                                                  # i.e. form is not valid, ask user to resubmit it
