@@ -37,14 +37,21 @@
     <span>Add a contact</span></a>
   {% endif %}
 
-  {% if activeperson.status >= 20 %}
+  {% if activeperson.status >= 15 %}
     <a class="btn btn-default" href="{% url 'password' %}">
     <span>Change Your Password</span></a>
+  {% endif %}
+
+  {% if activeperson.status >= 20 %}
     <a class="btn btn-default" href="{% url 'displayname' %}">
     <span>Change Your Displayed Name</span></a>
+  {% endif %}
+
+  {% if activeperson.status >= 15 %}
     <a class="btn btn-default" href="{% url 'useroptions' type='get' color='get' whence='events' %}">
     <span>Settings</span></a>
   {% endif %}
+
   {% if activeperson.status >= 60 %}
     <a class="btn btn-default" href="{% url 'siteadmindetail' %}">
     <span>Admin</span></a>
