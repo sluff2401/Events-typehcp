@@ -1,6 +1,6 @@
 {% extends "mysite/base.html" %}
 {% block content %}
-  {% if activeperson.status <= 10 %}
+  {% if activeperson.username = 'default' %}
     <h2 class='item'><span class='detail'>{{sitesettings.advert}}</span></h2>
     <h2 class='item'><span class='detail'>{{sitesettings.contact_info}}</span></h2>
   {% endif %}
@@ -14,7 +14,7 @@
     {% endif %}
   {% endif %}
 
-  {% if activeperson.status >= 20 %}
+  {% if activeperson.status >= 18 %}
     <a class="btn btn-default" href="{% url 'memberlist' %}">
     {% if IS_CLUB %}
       <span>View members</span></a>
@@ -22,6 +22,14 @@
       <span>View persons</span></a>
     {% endif %}
   {% endif %}
+
+  {% if activeperson.status < 20 %}
+      {% if activeperson.username != 'default' %}
+        <p class="top-menu"><small>(<a href="{% url 'django.contrib.auth.views.logout' %}">Log out</a>)</small></p>
+      {% endif %}
+  {% endif %}
+
+
 
   {% if activeperson.status >= 35 %}
     <a class="btn btn-default" href="{% url 'memberinsert' %}" >
@@ -37,20 +45,15 @@
     <span>Add a contact</span></a>
   {% endif %}
 
-  {% if activeperson.status >= 15 %}
+  {% if activeperson.status >= 20 %}
     <a class="btn btn-default" href="{% url 'password' %}">
     <span>Change Your Password</span></a>
-  {% endif %}
-
-  {% if activeperson.status >= 20 %}
     <a class="btn btn-default" href="{% url 'displayname' %}">
     <span>Change Your Displayed Name</span></a>
-  {% endif %}
-
-  {% if activeperson.status >= 15 %}
     <a class="btn btn-default" href="{% url 'useroptions' type='get' color='get' whence='events' %}">
     <span>Settings</span></a>
   {% endif %}
+
 
   {% if activeperson.status >= 60 %}
     <a class="btn btn-default" href="{% url 'siteadmindetail' %}">
@@ -126,7 +129,7 @@
             <h2><span class='label'>Event posted by (or last amended by):</span>&nbsp;&nbsp;&nbsp;&nbsp;<span class='author'>{{x.event.author.first_name}}</span></h2>
         {% endif %}
         {% endcomment %}
-        {% if activeperson.status >= 20 %}
+        {% if activeperson.status >= 18 %}
           <h2><span class='label'>Host(s):  </span>&nbsp;&nbsp;<span class='attendees'>{{ x.hosts }}    </span></a></h2>
           <h2><span class='label'>Attendees:</span>&nbsp;&nbsp;<span class='attendees'>{{ x.attendees }}</span></a></h2>
         {% endif %}
