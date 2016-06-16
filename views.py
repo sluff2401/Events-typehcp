@@ -183,12 +183,13 @@ def event_insert(request):
     form = EventForm(request.POST)
     if form.is_valid():
       event                                   = form.save(commit=False)
-      if event.e_date                         < timezone.localtime(timezone.now()).date():
+      if event.e_date                         < timezone.localtime(timezone.now()).date()\
+      and IS_CLUB:
         error_message                         = 'event date cannot be in the past, please enter a valid date'
-        return render(request, 'events/insert_update.html', {'form': form, 'error_message': error_message})
-                                              # events cannot be posted for dates in past
+        return render(request, 'events/insert_update.html', {'form': form, 'error_message': error_message})                                           # events cannot be posted for dates in past
       else:
         periodsought                          = 'current'
+
       activeperson_status                     =  0
       if request.user.is_authenticated():
         activeuser                          =  User.objects.get(id=request.user.id)
@@ -229,7 +230,8 @@ def event_update(request, pk):
     form = EventForm(request.POST, instance=event)
     if form.is_valid():
       event                                   = form.save(commit=False)
-      if event.e_date                         < timezone.localtime(timezone.now()).date():
+      if event.e_date                         < timezone.localtime(timezone.now()).date()\
+      and IS_CLUB:
         error_message                         = 'event date cannot be in the past, please enter a valid date'
         return render(request, 'events/insert_update.html', {'form': form, 'error_message': error_message})
                                               # events cannot be posted for dates in past
@@ -268,7 +270,8 @@ def hosts_update(request, pk):
     form = HostForm(request.POST, instance=event)
     if form.is_valid():
       event                                   = form.save(commit=False)
-      if event.e_date                         < timezone.localtime(timezone.now()).date():
+      if event.e_date                         < timezone.localtime(timezone.now()).date()\
+      and IS_CLUB:
         error_message                         = 'event date cannot be in the past, please enter a valid date'
         return render(request, 'events/insert_update.html', {'form': form, 'error_message': error_message})
                                               # events cannot be posted for dates in past
@@ -309,7 +312,8 @@ def attendees_update(request, pk):
     form = AttendeeForm(request.POST, instance=event)
     if form.is_valid():
       event                                   = form.save(commit=False)
-      if event.e_date                         < timezone.localtime(timezone.now()).date():
+      if event.e_date                         < timezone.localtime(timezone.now()).date()\
+      and IS_CLUB:
         error_message                         = 'event date cannot be in the past, please enter a valid date'
         return render(request, 'events/insert_update.html', {'form': form, 'error_message': error_message})                                            # events cannot be posted for dates in past
       else:
@@ -355,7 +359,8 @@ def event_repeat(request, pk):
 
     if form.is_valid():
       event                                   = form.save(commit=False)
-      if event.e_date                         < timezone.localtime(timezone.now()).date():
+      if event.e_date                         < timezone.localtime(timezone.now()).date()\
+      and IS_CLUB:
         error_message                         = 'event date cannot be in the past, please enter a valid date'
         return render(request, 'events/insert_update.html', {'form': form, 'error_message': error_message})
                                               # events cannot be posted for dates in past
