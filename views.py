@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 
 from django.contrib.auth.models     import User
 from users.models                   import Person
-from mysite.models                  import ClubSettings
+from sitesettings.models            import StSt
 from .models                        import E
 
 from .forms                         import EventForm, HostForm, AttendeeForm
@@ -71,7 +71,7 @@ def event_list(request, periodsought='current'):
         {"event":event, "attendees":attendees_string, "hosts":hosts_string, 'user_can_edit_this_event':user_can_edit_this_event, 'event_status_now': event_status_now}
         events_augmented.append(event_augmented)
 
-    sitesettings                          =  get_object_or_404(ClubSettings)
+    sitesettings                          =  get_object_or_404(StSt)
     return render(request, 'events/events_list_club.html', \
     {'events': events_augmented, 'periodsought':periodsought, 'activeperson': activeperson, 'title': TITLE, 'IS_CLUB': IS_CLUB, 'sitesettings': sitesettings})
 
