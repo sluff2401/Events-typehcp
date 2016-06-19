@@ -17,7 +17,7 @@ class E(models.Model):
   notes                   = models.TextField(blank=True,null=True)
   attendees               = models.ManyToManyField(Person, related_name="bookedin", blank=True)
   hosts                   = models.ManyToManyField(Person, related_name="hh", blank=True)
-  #created_date            = models.DateTimeField(default=timezone.now)
+  created_date            = models.DateTimeField(default=timezone.now, blank=True, null=True)
   is_live                 = models.BooleanField(default=True)
   def __str__(self):
     return self.detail_public
