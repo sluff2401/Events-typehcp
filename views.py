@@ -9,7 +9,7 @@ from .models                        import E
 
 from .forms                         import EventForm, HostForm, AttendeeForm
 
-from mysite.settings                import IS_CLUB, TITLE
+from mysite.settings                import IS_CLUB, IS_DIARY, IS_PUBLICSITE, TITLE
 
 # functions which do not update the database
 # and don't require a pk as they don't refer to an specific record
@@ -58,9 +58,7 @@ def event_list(request, periodsought='current'):
           event_status_now                       = 'deletednonpast'
 
 
-        if IS_CLUB:
-          pass
-        else:
+        if IS_DIARY:
           current_event_date = event.e_date
           if event.e_date == stored_event_date:
             event.e_date = ''
@@ -73,16 +71,8 @@ def event_list(request, periodsought='current'):
 
     sitesettings                          =  get_object_or_404(StSt)
     return render(request, 'events/events_list_club.html', \
-    {'events': events_augmented, 'periodsought':periodsought, 'activeperson': activeperson, 'title': TITLE, 'IS_CLUB': IS_CLUB, 'sitesettings': sitesettings})
+    {'events': events_augmented, 'periodsought':periodsought, 'activeperson': activeperson, 'title': TITLE, 'IS_CLUB': IS_CLUB, 'IS_DIARY': IS_DIARY, 'sitesettings': sitesettings})
 
-    '''
-    if IS_CLUB:
-      return render(request, 'events/events_list_club.html', \
-      {'events': events_augmented, 'periodsought':periodsought, 'activeperson': activeperson, 'title': TITLE, 'IS_CLUB': IS_CLUB})
-    else:
-      return render(request, 'events/events_list_solo.html', \
-      {'events': events_augmented, 'periodsought':periodsought, 'activeperson': activeperson, 'title': TITLE, 'IS_CLUB': IS_CLUB})
-    '''
 
 # functions which do not update the database
 # but do require a pk as they refer to an existing record

@@ -116,27 +116,11 @@
         {% endif %}
     {% endif %}
     {% endif %}
-      {% if IS_CLUB %}
+      {% if not IS_DIARY %}
         <h2 class="item"><span class='detail'>{{ x.event.detail_public|linebreaks }}</span></h2>
       {% endif %}
     {% endif %}
-      {% if IS_CLUB %}
-        {% if activeperson.status >= 15 %}
-          <h2 class="item"><span class='detail'>{{ x.event.detail_private|linebreaks }}</span></h2>
-        {% endif %}
-        {% comment %}
-        {% if activeperson.status >= 40 %}
-            <h2><span class='label'>Event posted by (or last amended by):</span>&nbsp;&nbsp;&nbsp;&nbsp;<span class='author'>{{x.event.author.first_name}}</span></h2>
-        {% endif %}
-        {% endcomment %}
-        {% if activeperson.status >= 18 %}
-          <h2><span class='label'>Host(s):  </span>&nbsp;&nbsp;<span class='attendees'>{{ x.hosts }}    </span></a></h2>
-          <h2><span class='label'>Attendees:</span>&nbsp;&nbsp;<span class='attendees'>{{ x.attendees }}</span></a></h2>
-        {% endif %}
-        {% if activeperson.status >= 15 %}
-          <h2 class ='date'>__________________________________________________</h2>
-        {% endif %}
-      {% else %} {# i.e. is personal diary #}
+      {% if IS_DIARY %}
             <h2 class='item'>
             <a class="btn btn-default" href="{% url 'eventupdate' pk=x.event.pk %}">
             <span class="glyphicon glyphicon-pencil"></span></a>
@@ -150,18 +134,37 @@
               <a class="item" href="{% url 'eventdetail' pk=x.event.pk %}">
               <span class='detail'>{{ x.event.detail_public }}</span></a>
             </h2>
+      {% elif IS_CLUB %}
+        {% if activeperson.status >= 15 %}
+          <h2 class="item"><span class='detail'>{{ x.event.detail_private|linebreaks }}</span></h2>
+        {% endif %}
+        {% if activeperson.status >= 18 %}
+          <h2><span class='label'>Host(s):  </span>&nbsp;&nbsp;<span class='attendees'>{{ x.hosts }}    </span></a></h2>
+          <h2><span class='label'>Attendees:</span>&nbsp;&nbsp;<span class='attendees'>{{ x.attendees }}</span></a></h2>
+        {% endif %}
+        {% if activeperson.status >= 15 %}
+          <h2 class ='date'>__________________________________________________</h2>
+        {% endif %}
+      {% else %} {# i.e. is  publicsite #}
+        {% if activeperson.status >= 15 %}
+          <h2 class="item"><span class='detail'>{{ x.event.detail_private|linebreaks }}</span></h2>
+          <h2 class ='date'>__________________________________________________</h2>
+        {% endif %}
       {% endif %}
 
 
   {% endfor %}
 
   <br><br><br><br>
-  <h2>
-  {% if activeperson.username != 'default' %}
-    <a class="btn btn-default" href="{% url 'unsubscribe' confirmed='no' %}">
-    <span class='background'>Unsubscribe</span></a>
+  {% if IS_CLUB %}
+    <h2>
+    {% if activeperson.username != 'default' %}
+      <a class="btn btn-default" href="{% url 'unsubscribe' confirmed='no' %}">
+      <span>Unsubscribe</span></a>
+    {% endif %}
+    </h2>
   {% endif %}
-  </h2>
+
 {% endblock content %}
     {% comment %}
 

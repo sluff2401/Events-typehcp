@@ -20,7 +20,7 @@ class HostForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(HostForm, self).__init__(*args, **kwargs)
         self.fields["hosts"].widget = CheckboxSelectMultiple()
-        self.fields["hosts"].queryset = Person.objects.order_by('display_name')
+        self.fields["hosts"].queryset = Person.objects.filter(status__gte=20).order_by('display_name')
 
 
 
